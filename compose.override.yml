@@ -1,0 +1,7 @@
+# Mount only reviewed, read-only agent material into Hermes. The repository
+# checkout itself is never mounted wholesale into the container.
+services:
+  hermes:
+    volumes:
+      - ${AGENT_DIR:?set by agent-mgr from the registry}/runtime/SOUL.md:/opt/data/SOUL.md:ro
+      - ${AGENT_DIR:?set by agent-mgr from the registry}/skills:/opt/data/skills/custom:ro

@@ -1,0 +1,15 @@
+{
+  "$schema": "https://plow.co/schemas/agent/v1.json",
+  "id": "subzero",
+  "name": "SubZero — Financial & Subscription Butler",
+  "description": "Privacy-first personal financial assistant. Audits recurring subscriptions, catches price increases, flags duplicate charges and tracks expenses locally on your Mac via Plow Latch.",
+  "version": "1.0.0",
+  "icon": "assets/agent-icon.png",
+  "runtime": {
+    "type": "hermes"
+  },
+  "entry": "agent.env",
+  "permissions": [
+    "computer-use"
+  ]
+}

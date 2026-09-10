@@ -1,0 +1,40 @@
+# Python artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environments
+venv/
+.venv/
+ENV/
+
+# Plow & Latch credentials & local state
+/plow-credentials
+.agent-index-state.json
+.agent-index/
+*.env.local
+
+# Local SQLite databases (keep demo seed scripts, but ignore local user db)
+*.db-journal
+*.db-wal
+*.db-shm
+~/.subzero/
+.DS_Store

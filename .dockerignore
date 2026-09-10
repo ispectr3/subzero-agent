@@ -1,0 +1,12 @@
+.git
+.gitignore
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.venv
+venv
+/plow-credentials
+.agent-index-state.json
+.agent-index/
+.DS_Store

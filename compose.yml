@@ -1,0 +1,19 @@
+# SubZero — Financial & Subscription Butler Compose Definition
+# For running locally via plow-agents or docker compose
+services:
+  agent:
+    image: public.ecr.aws/e1h7x4a2/plow-cloud-agents:base-cd2a898d673812621bae6764560e455807e9818e@sha256:bfd4980f361a551e62569f8c2eb717c1076d0b8be3a0499b869eaece151336a4
+    environment:
+      - AGENT_ID=subzero
+    volumes:
+      # Latch credential mounted from host
+      - ./plow-credentials:/var/lib/plow/credentials.host:ro
+      # Agent persona and skills
+      - ./runtime/SOUL.md:/var/lib/hermes/SOUL.md:ro
+      - ./skills:/opt/hermes/skills/custom:ro
+      # Durable state
+      - agent-home:/var/lib/hermes
+    stop_grace_period: 35s
+
+volumes:
+  agent-home:

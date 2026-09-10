@@ -1,0 +1,26 @@
+# Shared declarative configuration for SubZero Financial Butler.
+# Instance secrets are interpolated from the private agent home dotenv and never belong in this repository.
+group_sessions_per_user: false
+
+model:
+  default: gpt-5.5
+  provider: openai-codex
+
+# Plow Latch MCP connection to the owner's Mac
+mcp_servers:
+  latch:
+    url: https://api.plow.co/v1/relay/devices/${DOMO_DEVICE_UID}/mcp
+    headers:
+      Authorization: Bearer ${DOMO_MCP_TOKEN}
+    enabled: true
+
+plugins:
+  enabled:
+    - plow-chat-platform
+  entries:
+    plow-chat-platform:
+      allow_tool_override: false
+
+platforms:
+  plow_chat:
+    enabled: true
