@@ -1,0 +1,15 @@
+data,valor,identificador,descricao
+2026-08-01,8500.00,pix-sal-01,Transferência recebida - Salário Tech Corp
+2026-08-03,-19.90,amz-prime-01,Amazon Prime
+2026-08-05,-120.00,pad-01,Padaria Real
+2026-08-10,-85.00,farm-01,Drogasil Farmácia
+2026-08-12,-65.90,nflx-01,Netflix Entretenimento
+2026-08-14,-142.50,pao-01,Pão de Açúcar Loja 14
+2026-08-14,-142.50,pao-02,Pão de Açúcar Loja 14
+2026-08-15,-55.00,gh-cop-01,GitHub Copilot
+2026-08-18,-34.90,sptf-01,Spotify Brasil
+2026-08-25,-129.90,fit-01,SmartFit Academia
+2026-08-28,-14.90,appl-01,Apple iCloud Storage
+2026-09-02,-115.00,anth-01,Claude Pro Anthropic
+2026-09-05,-95.00,rest-01,Restaurante Terraço
+2026-09-10,-115.00,oai-01,ChatGPT Plus OpenAI

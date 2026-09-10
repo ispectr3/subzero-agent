@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "subzero-agent"
+version = "1.0.0"
+description = "Privacy-first subscription auditor, price hike detector and financial butler for Hermes Agent & Plow Latch"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "Apache-2.0" }
+authors = [
+    { name = "Kaique Pinheiro", email = "kaiquepinheiro01@icloud.com" }
+]
+keywords = ["hermes", "plow", "latch", "finance", "subscriptions", "agent", "privacy"]
+
+dependencies = []
+
+[project.scripts]
+subzero = "scripts.subzero_cli:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["engine*", "scripts*"]

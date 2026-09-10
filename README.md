@@ -75,31 +75,31 @@ flowchart TD
 
 ## 🚀 Quickstart & Local Demo
 
-### 1. Clone & Setup
+### 1. Clone & One-Line Install
 ```bash
 git clone https://github.com/ispectr3/subzero-agent.git
 cd subzero-agent
+./install.sh
 ```
+`./install.sh` sets up the global `subzero` command on your Mac (`~/.local/bin/subzero`) and initializes a demo SQLite database.
 
-### 2. Seed Realistic Demo Data
-Populate your local test SQLite database with realistic transactions (salaries, subscriptions, Netflix price hike, and duplicate grocery charge):
-```bash
-python3 scripts/seed_demo.py
-```
-
-### 3. Run Local Audits
+### 2. Run Local Audits (Anywhere on your Mac)
 ```bash
 # 1. Full Subscription & Anomaly Audit
-python3 scripts/subzero_cli.py audit
+subzero audit
 
 # 2. Monthly Summary
-python3 scripts/subzero_cli.py summary --month 2026-08
+subzero summary --month 2026-08
 
 # 3. Found Money Guide (Brazil or US)
-python3 scripts/subzero_cli.py found-money --country BR
+subzero found-money --country BR
+
+# 4. Import Sample Bank Statements (CSV / OFX)
+subzero import-statement --file samples/nubank_exemplo.csv
+subzero import-statement --file samples/itau_exemplo.ofx
 ```
 
-### 4. Run Test Suite
+### 3. Run Test Suite
 ```bash
 python3 -m unittest discover tests
 ```

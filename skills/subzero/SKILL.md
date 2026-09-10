@@ -21,26 +21,26 @@ Trigger this skill whenever the user:
 
 All operations execute strictly on the owner's Mac through the **Plow Latch MCP** using `latch:run_command` (or `plow_run_command`).
 
-The local engine CLI is located at:
-`python3 scripts/subzero_cli.py` (or `python3 ~/.subzero/scripts/subzero_cli.py`)
+The local engine CLI can be executed via:
+`subzero <subcommand>` (global command) or `python3 scripts/subzero_cli.py <subcommand>`
 
 ### 1. Subscription & Anomaly Audit (`audit`)
 Execute:
 ```bash
-python3 scripts/subzero_cli.py audit --json
+subzero audit --json
 ```
 - Inspect the output:
-  - `active_subscriptions`: List of detected subscriptions, intervals, monthly amounts, annual impact, and any price changes (`price_change != 0`).
+  - `subscriptions`: List of detected subscriptions, intervals, monthly amounts, annual impact, and any price changes (`price_change_pct != null`).
   - `anomalies`: List of duplicate transactions or price hike alerts.
-  - `monthly_total` and `annual_total`: Total committed recurring spending.
+  - `total_monthly` and `total_annual`: Total committed recurring spending.
 - Format the response into concise iMessage-ready cards.
 
 ### 2. Monthly Cash Flow & Expense Summary (`summary`)
 Execute:
 ```bash
-python3 scripts/subzero_cli.py summary --json
+subzero summary --json
 # Or for a specific month:
-python3 scripts/subzero_cli.py summary --month 2026-03 --json
+subzero summary --month 2026-03 --json
 ```
 - Report:
   - Total Income & Total Expenses
@@ -50,9 +50,9 @@ python3 scripts/subzero_cli.py summary --month 2026-03 --json
 ### 3. Forgotten / Unclaimed Money Guidance (`found-money`)
 Execute:
 ```bash
-python3 scripts/subzero_cli.py found-money --country BR
+subzero found-money --country BR
 # Or for US:
-python3 scripts/subzero_cli.py found-money --country US
+subzero found-money --country US
 ```
 - Explain the official, free government portals (Banco Central do Brasil SVR / NAUPA MissingMoney).
 - Warn explicitly against scams or third parties charging fees to recover funds.
@@ -60,7 +60,7 @@ python3 scripts/subzero_cli.py found-money --country US
 ### 4. Bank Statement Import (`import-statement`)
 Execute:
 ```bash
-python3 scripts/subzero_cli.py import-statement <local_file_path>
+subzero import-statement --file /path/to/statement.csv
 ```
 - Automatically detects Nubank, Itaú, Inter, generic CSV, or OFX formats.
 - Reports imported transactions count and automatically triggers an `audit` if new recurring patterns or duplicates appear.
@@ -68,8 +68,17 @@ python3 scripts/subzero_cli.py import-statement <local_file_path>
 ### 5. Add Manual Transaction (`add-tx`)
 Execute:
 ```bash
-python3 scripts/subzero_cli.py add-tx <amount> "<description>" --category "<category>" --type expense
+subzero add-tx --amount 45.00 --description "Almoço Executivo" --category "Alimentação"
 ```
+
+---
+
+## Proactive Engagement & Notifications
+
+If a new statement is imported or the user initiates conversation after a billing cycle:
+1. Proactively highlight any **price increases** (e.g. Netflix increased by 18%).
+2. Alert immediately on **duplicate charges** in the last 48h.
+3. Suggest calculated annual savings if unused subscriptions are cancelled.
 
 ---
 
