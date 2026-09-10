@@ -1,178 +1,225 @@
-# ❄️ SubZero — Financial & Subscription Butler
+<div align="center">
 
-> **Privacy-First Autonomous Financial Butler on Hermes Agent & Plow Latch**  
-> Built for the **Hermes Hackathon** by *AI Worth Using* x *Plow* x *Tom Preston-Werner*.
+<img src="assets/agent-icon.png" width="140" height="140" alt="SubZero Logo" style="border-radius: 28px;" />
 
-<p align="center">
-  <img src="assets/agent-icon.png" width="160" height="160" alt="SubZero Icon" style="border-radius: 28px;" />
-</p>
+# SubZero
 
----
+**Local-first financial audit daemon and subscription butler for Hermes Agent.**  
+Audits recurring subscriptions, flags stealth price increases, catches duplicate charges, and manages personal cash flow locally via Plow Latch.
 
-## 💡 The Problem: Silent Financial Leaks
+[![CI](https://github.com/ispectr3/subzero-agent/actions/workflows/ci.yml/badge.svg)](https://github.com/ispectr3/subzero-agent/actions)
+![Python](https://img.shields.io/badge/python-3.10%20%7C%203.11%20%7C%203.12%20%7C%203.13-blue.svg)
+![Storage](https://img.shields.io/badge/storage-SQLite%20WAL-lightgrey.svg)
+![Runtime](https://img.shields.io/badge/runtime-Hermes%20Agent-purple.svg)
+![Protocol](https://img.shields.io/badge/MCP-Plow%20Latch-black.svg)
+![License](https://img.shields.io/badge/license-Apache--2.0-green.svg)
 
-Every year, modern consumers bleed thousands in untracked finances:
-- **Zombie Subscriptions:** The average person spends over $219/month across 12+ subscriptions — over 30% are forgotten or rarely used.
-- **Stealth Price Hikes:** Streaming, cloud, and AI tools silently raise prices by 15% to 25% without explicit push notifications.
-- **Duplicate Charges:** Supermarket double-swipes and phantom recurring charges go unnoticed across long credit card bills.
-- **Unclaimed / Forgotten Money:** Over R$ 8.5 billion (Banco Central do Brasil) and $15+ billion (US State Treasuries) sit forgotten in closed accounts.
-- **The Cloud Privacy Dilemma:** Users hate sharing their personal bank statements, account numbers, and transaction history with closed cloud platforms.
+</div>
 
 ---
 
-## 🛡️ The Solution: SubZero
+## Overview
 
-**SubZero** is an autonomous personal financial butler running on **Hermes Agent**, communicating through **iMessage / Plow Chat**, and interacting with the user's Mac via **Plow Latch MCP**.
+SubZero is an autonomous financial butler built for the **Hermes Hackathon** (*AI Worth Using* × *Plow* × *Tom Preston-Werner*).
 
-### 🔒 100% Local Privacy Guarantee
-- **Zero Cloud Exfiltration:** Your raw financial transactions, bank statements, and account balances **never leave your local machine**.
-- **Local SQLite Storage:** Everything is stored securely at `~/.subzero/finance.db`.
-- **Plow Latch Relay:** Hermes runs analytical queries through audited `plow_run_command` calls, receiving only synthesized summaries to format into your chat.
+Most financial tracking applications suffer from a privacy paradox: they require users to upload bank logins, transaction records, and tax identifiers to third-party cloud aggregators.
+
+SubZero reverses this paradigm:
+- **Zero Cloud Exfiltration:** All raw bank statements, transaction logs, and balances reside exclusively on the owner's macOS host in a local SQLite database (`~/.subzero/finance.db`).
+- **Sandboxed MCP Execution:** The Hermes cloud agent interacts with the user's Mac over the **Plow Latch MCP relay** via `plow_run_command`, receiving only high-level analytical summaries.
+- **Conversational Channel:** Runs natively in iMessage, SMS, and Plow Chat threads.
 
 ---
 
-## 🏛️ Architecture
+## System Architecture
 
 ```mermaid
-flowchart TD
-    subgraph OwnerDevice ["🖥️ Owner's Mac (Local & Private)"]
-        CLI["scripts/subzero_cli.py"]
-        DB[("~/.subzero/finance.db\nSQLite WAL")]
-        Statements["Local Bank Statements\n(CSV / OFX)"]
+flowchart LR
+    subgraph Host ["macOS Host (Local & Private)"]
+        CLI["subzero CLI\n(~/.local/bin/subzero)"]
+        DB[("~/.subzero/finance.db\nSQLite WAL Mode")]
+        Files["Bank Statements\n(CSV / OFX)"]
         CLI --> DB
-        Statements --> CLI
+        Files --> CLI
     end
 
-    subgraph PlowRelay ["🔐 Plow Latch Relay"]
-        MCP["Latch MCP Server\n(plow_run_command)"]
+    subgraph Relay ["Plow Latch Relay"]
+        MCP["MCP Server\n(plow_run_command)"]
     end
 
-    subgraph CloudHermes ["🤖 Hermes Agent Cloud"]
-        Hermes["Hermes Brain\n(SOUL.md + Skills)"]
-        IndexClient["agent-index-client\n(Telemetry & Ranking)"]
+    subgraph Container ["Hermes Runtime"]
+        Agent["Hermes Agent\n(SOUL.md + Skills)"]
+        Tele["agent-index-client\n(Usage Telemetry)"]
     end
 
-    User(["📱 User (iMessage / Plow Chat)"]) <--> Hermes
-    Hermes <--> MCP
+    User(["Owner (iMessage / Plow Chat)"]) <--> Agent
+    Agent <--> MCP
     MCP <--> CLI
-    IndexClient --> Leaderboard["🏆 AI Worth Using Leaderboard"]
+    Tele --> Leaderboard["AI Worth Using Index"]
+```
+
+### Local-First vs. Cloud Aggregators
+
+| Characteristic | Cloud Aggregators (Plaid, Mint, Rocket) | SubZero + Hermes Latch |
+|---|---|---|
+| **Data Residency** | Third-party cloud servers | Local host (`~/.subzero/finance.db`) |
+| **Authentication** | Bank credentials / OAuth tokens stored remotely | None required; imports raw CSV / OFX directly |
+| **Cadence Detection** | Static calendar heuristics | Statistical delta analysis (7d, 30d, 365d) |
+| **Price Hike Tracking** | Rare / delayed | Immediate month-over-month delta alerts |
+| **Runtime Footprint** | Proprietary closed SaaS | Standard library Python 3 (zero heavy deps) |
+
+---
+
+## Terminal Output
+
+Running `subzero audit` produces concise, scannable summaries formatted for terminal and mobile messaging:
+
+```text
+💳 SubZero — Auditoria de Assinaturas & Recorrências
+══════════════════════════════════════════════════
+🔎 8 serviço(s) recorrente(s) identificado(s):
+
+ • ChatGPT Plus / OpenAI: R$ 115.00/mês
+ • Claude Pro / Anthropic: R$ 115.00/mês
+ • Apple iCloud / Services: R$ 14.90/mês
+ • Academia / Fitness: R$ 129.90/mês
+ • Spotify: R$ 34.90/mês
+ • GitHub Copilot / Sub: R$ 55.00/mês
+ • Netflix: R$ 65.90/mês ⚠️ (aumentou 18%!)
+ • Amazon Prime: R$ 19.90/mês
+
+──────────────────────────────────────────────────
+💸 Sangramento Recorrente: R$ 550.50/mês
+📈 Impacto Projetado:     R$ 6606.00/ano
+──────────────────────────────────────────────────
+
+🚨 Alertas de Cobrança Duplicada Detectados:
+ • Cobrança potencialmente duplicada: 2x R$ 142.50 em 'PÃO DE AÇÚCAR LOJA 14' entre 2026-08-14 e 2026-08-14.
+
+📈 Alertas de Aumento de Preço:
+ • Assinatura 'Netflix' aumentou de R$ 55.90 para R$ 65.90 (+17.9%).
 ```
 
 ---
 
-## ✨ Key Capabilities
+## Quickstart
 
-| Feature | Description |
-|---|---|
-| 🔄 **Subscription Audit** | Automatically discovers recurring cadences (weekly, monthly, yearly) and calculates annual financial drag. |
-| 📈 **Price Hike Detection** | Identifies subtle month-over-month price bumps (e.g. Netflix increasing from R$ 55.90 to R$ 65.90). |
-| 🚨 **Duplicate Charge Buster** | Catches double charges on the same day or within 48h windows at identical merchants. |
-| 💰 **Found Money Navigator** | Step-by-step guidance to claim official forgotten funds via Banco Central (SVR) & US Treasuries. |
-| 📊 **Monthly Cash Flow** | Clean, visual breakdown of income, expenses, and net surplus/deficit per category. |
-| 📑 **Universal Importer** | Supports Nubank, Itaú, Inter, Bradesco, generic CSVs, and bank-standard OFX files. |
+### 1. Installation
+Clone the repository and run the setup script:
 
----
-
-## 🚀 Quickstart & Local Demo
-
-### 1. Clone & One-Line Install
 ```bash
 git clone https://github.com/ispectr3/subzero-agent.git
 cd subzero-agent
 ./install.sh
 ```
-`./install.sh` sets up the global `subzero` command on your Mac (`~/.local/bin/subzero`) and initializes a demo SQLite database.
 
-### 2. Run Local Audits (Anywhere on your Mac)
+`install.sh` links the executable to `~/.local/bin/subzero`, configures `~/.subzero/`, and populates a realistic seed dataset for immediate verification.
+
+### 2. Basic Usage
+The CLI is globally available from any directory:
+
 ```bash
-# 1. Full Subscription & Anomaly Audit
+# Audit active subscriptions, price hikes, and duplicate charges
 subzero audit
 
-# 2. Monthly Summary
+# Get monthly cash flow breakdown (income, expenses, net)
 subzero summary --month 2026-08
 
-# 3. Found Money Guide (Brazil or US)
-subzero found-money --country BR
-
-# 4. Import Sample Bank Statements (CSV / OFX)
+# Import bank statements (CSV or OFX standard)
 subzero import-statement --file samples/nubank_exemplo.csv
 subzero import-statement --file samples/itau_exemplo.ofx
+
+# Retrieve official government unclaimed funds recovery instructions
+subzero found-money --country BR
 ```
 
-### 3. Run Test Suite
+All commands accept `--json` for machine consumption.
+
+---
+
+## CLI Reference
+
+| Command | Arguments | Description |
+|---|---|---|
+| `audit` | `[--db PATH] [--json]` | Runs subscription cadence matching, price hike detection, and duplicate charge checks. |
+| `summary` | `[--month YYYY-MM] [--json]` | Computes total income, expenses, net balance, and spending breakdown by category. |
+| `import-statement`| `--file PATH` | Auto-detects and ingests Nubank, Itaú, Inter, generic CSVs, or bank OFX files. |
+| `add-tx` | `--amount N --description STR [--category STR] [--date YYYY-MM-DD]` | Records a manual transaction directly into local SQLite. |
+| `found-money` | `[--country BR\|US] [--json]` | Returns official verification steps for BCB (SVR) and US State Treasuries (NAUPA). |
+
+---
+
+## Repository Structure
+
+```text
+subzero-agent/
+├── .github/workflows/ci.yml # Automated CI matrix (Python 3.10-3.13 on macOS)
+├── assets/
+│   └── agent-icon.png       # 512x512 PNG app icon for Plow UI
+├── engine/                  # Core local financial analysis engine
+│   ├── anomaly.py           # Duplicate detection & unclaimed funds router
+│   ├── database.py          # SQLite connection manager with WAL mode
+│   ├── detector.py          # Subscription regex normalization & cadence logic
+│   ├── importer.py          # CSV/OFX statement parser with dialect sniffing
+│   ├── models.py            # Typed dataclasses
+│   └── repository.py        # Aggregate queries & CRUD operations
+├── runtime/
+│   ├── SOUL.md              # Hermes agent identity, boundaries, and formatting rules
+│   └── config.yaml          # Hermes MCP servers & chat plugin configuration
+├── samples/                 # Sample statement files for testing
+│   ├── itau_exemplo.ofx     # Valid bank-standard OFX SGML
+│   └── nubank_exemplo.csv   # Valid credit card / account CSV
+├── scripts/
+│   ├── agent_index_client.py# Official AI Worth Using usage telemetry client
+│   ├── seed_demo.py         # Deterministic demo dataset generator
+│   └── subzero_cli.py       # Local CLI entrypoint
+├── skills/
+│   └── subzero/SKILL.md     # Hermes skill definition and Latch execution rules
+├── tests/
+│   ├── test_contract.py     # Plow Latch manifest & security invariant tests
+│   └── test_detector.py     # Unit tests for cadence & anomaly algorithms
+├── compose.yml              # Local container execution definition
+├── install.sh               # Host setup script for macOS
+├── plow-agent.json          # Official Plow agent manifest
+└── pyproject.toml           # Standard Python package specification
+```
+
+---
+
+## Development & Verification
+
+Run the test suite:
+
 ```bash
-python3 -m unittest discover tests
+python3 -m unittest discover tests -v
 ```
 
----
-
-## 💬 Chat Interaction Examples (iMessage / Plow Chat)
-
-### 💬 "Quais minhas assinaturas ativas?"
-> **SubZero:**
-> 💳 **SubZero — Auditoria de Assinaturas**
-> 
-> 🔎 **8 serviços recorrentes identificados:**
-> • 🤖 **ChatGPT Plus:** R$ 115.00/mês (R$ 1.380/ano)  
-> • 🧠 **Claude Pro:** R$ 115.00/mês (R$ 1.380/ano)  
-> • 🏋️ **Academia:** R$ 129.90/mês (R$ 1.558/ano)  
-> • 🎬 **Netflix:** R$ 65.90/mês ⚠️ *(aumentou 18%! Era R$ 55.90)*  
-> • 💻 **GitHub Copilot:** R$ 55.00/mês (R$ 660/ano)  
-> • 🎵 **Spotify:** R$ 34.90/mês (R$ 418/ano)  
-> • 📦 **Amazon Prime:** R$ 19.90/mês (R$ 238/ano)  
-> • ☁️ **Apple iCloud:** R$ 14.90/mês (R$ 178/ano)  
-> 
-> 💸 **Sangramento Mensal:** R$ 550.50/mês  
-> 📈 **Impacto Anual:** R$ 6.606.00/ano  
-> 
-> 💡 *Cancelando Netflix e um dos assistentes de IA, você economiza R$ 2.170,00 por ano.*
+The test suite validates:
+1. **Manifest Integrity:** Conformance with `https://plow.co/schemas/agent/v1.json`.
+2. **Security Invariants:** Ensures no live API keys or Plow tokens are committed.
+3. **Detection Accuracy:** Verifies subscription cadence identification and duplicate detection algorithms.
+4. **Asset Constraints:** Confirms `assets/agent-icon.png` is under 512 KB and valid PNG.
 
 ---
 
-### 💬 "Teve alguma cobrança estranha ou duplicada?"
-> **SubZero:**
-> 🚨 **Cobrança Duplicada Detectada:**  
-> • **Estabelecimento:** Pão de Açúcar Loja 14  
-> • **Valor:** 2x R$ 142.50 no dia 14/08/2026.  
-> • **Recomendação:** Verifique sua fatura ou cupom fiscal e solicite o estorno do valor duplicado com a operadora do cartão.
+## Hermes Deployment & Telemetry
 
----
-
-### 💬 "Como resgato dinheiro esquecido?"
-> **SubZero:**
-> 💰 **Valores a Receber — Banco Central do Brasil (SVR)**  
-> 🏛️ **Portal Oficial:** [valoresareceber.bcb.gov.br](https://valoresareceber.bcb.gov.br)  
-> 
-> 1. Acesse o portal oficial e entre com sua conta `Gov.br` (prata ou ouro).  
-> 2. Consulte se há valores a receber em contas antigas, consórcios ou tarifas indevidas.  
-> 3. Solicite o resgate via chave Pix diretamente para sua conta bancária.  
-> ⚠️ *Atenção: O Banco Central nunca envia links por SMS, WhatsApp ou e-mail!*
-
----
-
-## 🏆 Deployment & Hackathon Leaderboard
-
-SubZero integrates the official `agent-index-client.py` to report installs and tokens to the AI Worth Using Leaderboard.
-
-### 1. Register SubZero on the Agent Index
+### 1. Register on the Agent Index
 ```bash
 python3 scripts/agent_index_client.py --register \
   --agent "subzero" \
-  --name "SubZero — Financial & Subscription Butler" \
-  --blurb "Privacy-first personal financial butler. Audits subscriptions, catches price hikes and duplicate charges locally via Plow Latch."
+  --name "SubZero — Financial Butler" \
+  --blurb "Local-first subscription auditor and financial butler via Plow Latch."
 ```
 
-### 2. Deploy with `plow-agents`
+### 2. Launch with Plow Agents
 ```bash
-# Mint credentials for your Plow line
 plow-agents mint <your-line-id>
-
-# Start SubZero
 docker compose up -d
 ```
 
 ---
 
-## 📄 License
+## License
 
-Apache-2.0. Built with pride for the **Hermes Hackathon 2026**.
+Apache-2.0. See [LICENSE](LICENSE) for terms.

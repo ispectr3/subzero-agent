@@ -1,0 +1,38 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    name: Test & Contract Validation
+    runs-on: macos-latest
+    strategy:
+      matrix:
+        python-version: ["3.10", "3.11", "3.12", "3.13"]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Run Test Suite
+        run: |
+          python3 -m unittest discover tests -v
+
+      - name: Verify CLI Installation
+        run: |
+          ./install.sh
+          ~/.local/bin/subzero --help
+          ~/.local/bin/subzero audit --json
+          ~/.local/bin/subzero summary --json
+          ~/.local/bin/subzero import-statement --file samples/nubank_exemplo.csv
+          ~/.local/bin/subzero import-statement --file samples/itau_exemplo.ofx
+          ~/.local/bin/subzero found-money --country BR --json
