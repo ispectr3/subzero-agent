@@ -12,7 +12,7 @@ Audits recurring subscriptions, flags stealth price increases, catches duplicate
 ![Storage](https://img.shields.io/badge/storage-SQLite%20WAL-lightgrey.svg)
 ![Runtime](https://img.shields.io/badge/runtime-Hermes%20Agent-purple.svg)
 ![Protocol](https://img.shields.io/badge/MCP-Plow%20Latch-black.svg)
-![License](https://img.shields.io/badge/license-Apache--2.0-green.svg)
+![License](https://img.shields.io/badge/license-MIT-green.svg)
 
 </div>
 
@@ -222,4 +222,4 @@ docker compose up -d
 
 ## License
 
-Apache-2.0. See [LICENSE](LICENSE) for terms.
+MIT License. See [LICENSE](LICENSE) for terms.
